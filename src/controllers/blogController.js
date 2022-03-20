@@ -31,40 +31,27 @@ let Blogs = async function (req, res) {
 };
 //================================================================================================================================
 const getBlogs = async function (req, res) {
-
     try {
 
-        let array = []
-        let authorId = req.query.authorId
-        let tags = req.query.tags
-        let category = req.query.category
-        let subcategory = req.query.subcategory
-        let blog = await blogModel.find({ $or: [{ authorId: authorId }, { category: category }, { tags: tags }, { subcategory: subcategory }] })
+        let info = req.query
+        let data = await BlogsModel.findOne(info)
+        if (data) {
+            if (data.isDeleted == false && data.isPublished == true) {
+                res.status(200).send({ Status: "Success", Info: data })
 
-        if (blog.length > 0) {
 
-            for (let element of blog) {
-
-                if (element.isDeleted === false && element.isPublished === true) {
-
-                    array.push(element)
-
-                }
-
-            } res.status(200).send({ status: true, data: array })
+            } else {
+                res.status(500).send({ err: "either book isn't published or data is deleted" })
+            }
         } else {
-            res.status(404).send({
-                status: false,
-                msg: "no such blog found"
-            })
+            res.status(404).send({ err: "please provide valid Query Params in Postman" })
         }
 
     }
     catch (err) {
-        console.log(err)
-        res.status(500).send( { status: "failed", message: err.message})
+        console.log(err.message)
+        res.status(500).send({ msg: "Something went wrong" })
     }
-
 }
 //================================================================================================================================
 const updating = async function (req, res) {
